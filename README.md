@@ -1,2 +1,2 @@
 # Exercism
-Desafios em diversas linguagens de programação do site [Exercism.io](https://exercism.io/)
+Coding challenges of the website [Exercism.io](https://exercism.io/)
