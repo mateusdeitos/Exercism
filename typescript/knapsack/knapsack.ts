@@ -10,142 +10,70 @@ type Params = {
 };
 
 type Package = {
-  items: BaseComparisonItem[];
+  itemIndexes: number[];
   value: number;
   weight: number;
-};
-
-type BaseComparisonItem = Item & {
-  index: number;
-};
-
-const getOptimalPackageOfItems = (
-  baseItems: BaseComparisonItem[],
-  maximumWeight: number,
-  items: Item[],
-  cache: { [key: string]: Package } = {}
-): Package | undefined => {
-  const weight = baseItems.reduce((acc, item) => acc + item.weight, 0);
-  const value = baseItems.reduce((acc, item) => acc + item.value, 0);
-  const indexesOfBaseItems = baseItems.map((item) => item.index);
-  const pack: Package = {
-    items: [...baseItems],
-    value,
-    weight,
-  };
-
-  let remainingWeight = maximumWeight - weight;
-
-  if (remainingWeight === 0) {
-    return pack;
-  }
-
-  if (remainingWeight < 0) {
-    return;
-  }
-
-  const hash = baseItems.map((item) => item.index).join("-");
-  if (cache[hash]) {
-    return cache[hash];
-  }
-
-  const unfitItems: BaseComparisonItem[] = [];
-
-  items.forEach((item, index) => {
-    if (indexesOfBaseItems.includes(index)) {
-      return;
-    }
-
-    const fit = item.weight <= remainingWeight;
-
-    if (!fit) {
-      unfitItems.push({ ...item, index });
-      return;
-    }
-
-    remainingWeight -= item.weight;
-    pack.items.push({ ...item, index });
-    pack.value += item.value;
-    pack.weight += item.weight;
-  });
-
-  const otherPackages = unfitItems.reduce<Package[]>((acc, item) => {
-    let _baseItems = [...baseItems, item];
-    if (item.weight === maximumWeight) {
-      _baseItems = [item];
-    }
-
-    let otherCombination = getOptimalPackageOfItems(
-      _baseItems,
-      maximumWeight,
-      items,
-      cache
-    );
-
-    if (!otherCombination) {
-      return acc;
-    }
-
-    return [...acc, otherCombination];
-  }, []);
-
-  const optimalPackage = [pack, ...otherPackages].reduce(
-    (acc, comparisonPackage) => {
-      if (comparisonPackage.value > acc.value) {
-        return comparisonPackage;
-      }
-
-      if (
-        comparisonPackage.value === acc.value &&
-        comparisonPackage.weight < acc.weight
-      ) {
-        return comparisonPackage;
-      }
-
-      return acc;
-    },
-    pack
-  );
-
-  cache[hash] = optimalPackage;
-
-  return optimalPackage;
 };
 
 export function maximumValue({ maximumWeight, ...params }: Params): number {
   const items = params.items.filter((i) => i.weight <= maximumWeight);
 
-  const combination = items.reduce<Package>(
-    (currentOptimalPackage, item, index) => {
-      if (currentOptimalPackage.items.some((i) => i.index === index)) {
-        return currentOptimalPackage;
+  if (!items.length) {
+    return 0;
+  }
+
+  const packages = getPackagesBelowWeight(maximumWeight, items);
+
+  const result = packages.reduce((result, pack) => {
+    if (pack.value > result) {
+      return pack.value;
+    }
+
+    return result;
+  }, 0);
+
+  return result;
+}
+
+function getPackagesBelowWeight(
+  maximumWeight: number,
+  items: Item[]
+): Package[] {
+  const packages: Package[] = items.map((item, index) => {
+    return {
+      value: item.value,
+      weight: item.weight,
+      itemIndexes: [index],
+    };
+  });
+
+  for (let size = 1; size <= items.length; size++) {
+    const additionalPackages: Package[] = [];
+    for (const pack of packages) {
+      if (pack.itemIndexes.length < size) {
+        continue;
       }
 
-      const optimalPackage = getOptimalPackageOfItems(
-        [{ ...item, index }],
-        maximumWeight,
-        items.map((i, index) => ({ ...i, index }))
-      );
+      const startIndex = pack.itemIndexes.at(-1)! + 1;
 
-      if (!optimalPackage) {
-        return currentOptimalPackage;
+      for (let i = startIndex; i < items.length; i++) {
+        const item = items[i];
+        if (pack.weight + item.weight > maximumWeight) {
+          continue;
+        }
+
+        const newPack: Package = {
+          value: pack.value + item.value,
+          weight: pack.weight + item.weight,
+          itemIndexes: [...pack.itemIndexes, i],
+        };
+
+        additionalPackages.push(newPack);
       }
+    }
 
-      if (optimalPackage.value > currentOptimalPackage.value) {
-        return optimalPackage;
-      }
+    packages.push(...additionalPackages);
+  }
 
-      if (
-        optimalPackage?.value === currentOptimalPackage.value &&
-        optimalPackage?.weight < currentOptimalPackage.weight
-      ) {
-        return optimalPackage;
-      }
-
-      return currentOptimalPackage;
-    },
-    { value: 0, weight: 0, items: [] }
-  );
-
-  return combination.value;
+  return packages;
 }
