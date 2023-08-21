@@ -1,3 +1,5 @@
+const hipotenus = (x: number, y: number): number => Math.sqrt(x * x + y * y);
+
 export function score(x: number, y: number): number {
   const RADIUS_OUTER_CIRCLE = 10;
   const RADIUS_MIDDLE_CIRCLE = 5;
@@ -19,5 +21,3 @@ export function score(x: number, y: number): number {
 
   return 10;
 }
-
-const hipotenus = (x: number, y: number): number => Math.sqrt(x * x + y * y);
