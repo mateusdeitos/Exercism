@@ -1,0 +1,24 @@
+{
+  "authors": [
+    "bward"
+  ],
+  "contributors": [
+    "masters3d",
+    "Roshanjossey",
+    "SleeplessByte"
+  ],
+  "files": {
+    "solution": [
+      "atbash-cipher.ts"
+    ],
+    "test": [
+      "atbash-cipher.test.ts"
+    ],
+    "example": [
+      ".meta/proof.ci.ts"
+    ]
+  },
+  "blurb": "Create an implementation of the atbash cipher, an ancient encryption system created in the Middle East.",
+  "source": "Wikipedia",
+  "source_url": "https://en.wikipedia.org/wiki/Atbash"
+}
