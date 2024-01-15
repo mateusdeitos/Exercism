@@ -1,25 +1,22 @@
 defmodule LanguageList do
+  @spec new() :: []
   def new() do
     []
   end
 
-  def add(list, language) do
-    List.insert_at(list, 0, language)
-  end
+  @spec add(list(), any()) :: [...]
+  def add(list, language), do: [language | list]
 
-  def remove(list) do
-    List.delete_at(list, 0)
-  end
+  @spec remove(list()) :: list()
+  def remove([_|tail]), do: tail
 
-  def first(list) do
-    List.first(list)
-  end
+  @spec first(list()) :: any()
+  def first([first | _]), do: first
 
-  def count(list) do
-    Kernel.length(list)
-  end
+  @spec count(list()) :: non_neg_integer()
+  def count(list), do: length(list)
 
-  def functional_list?(list) do
-    "elixir" in Enum.map(list, fn language -> String.downcase(language) end)
-  end
+  @spec functional_list?(any()) :: boolean()
+  def functional_list?(list),
+    do: "elixir" in Enum.map(list, fn language -> String.downcase(language) end)
 end
