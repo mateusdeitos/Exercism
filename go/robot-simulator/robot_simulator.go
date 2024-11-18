@@ -13,6 +13,37 @@ const (
 	N, E, S, W Dir = 0, 1, 2, 3
 )
 
+func (c *Command) IsValid() bool {
+	return *c == 'R' || *c == 'L' || *c == 'A'
+}
+
+func (r *Step2Robot) TurnLeft() {
+	r.Dir--
+	if r.Dir < 0 {
+		r.Dir = W
+	}
+}
+
+func (r *Step2Robot) TurnRight() {
+	r.Dir++
+	if r.Dir > W {
+		r.Dir = N
+	}
+}
+
+func (r *Step2Robot) Advance() {
+	switch r.Dir {
+	case N:
+		r.Northing++
+	case E:
+		r.Easting++
+	case S:
+		r.Northing--
+	case W:
+		r.Easting--
+	}
+}
+
 func Right() {
 	Step1Robot.Dir++
 	if Step1Robot.Dir > W {
@@ -141,14 +172,9 @@ type robot struct {
 	index int
 }
 
-type PositionalMapping struct {
-	p map[RU]RU
-}
-
 func Room3(extent Rect, robots []Step3Robot, action chan Action3, rep chan []Step3Robot, log chan string) {
 	names := make(map[string]*robot)
 	posMap := make(map[RU]RU)
-	// uniqueLogControl := make(map[string]bool)
 	finishedCount := 0
 	for i := range robots {
 		r := &robots[i]
@@ -239,12 +265,4 @@ func Room3(extent Rect, robots []Step3Robot, action chan Action3, rep chan []Ste
 	}
 
 	rep <- robots
-}
-
-func uniqueLog(msg string, log chan string, uniqueLogControl map[string]bool) {
-	if _, ok := uniqueLogControl[msg]; ok {
-		return
-	}
-	uniqueLogControl[msg] = true
-	log <- msg
 }
